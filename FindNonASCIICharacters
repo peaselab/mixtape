@@ -1,0 +1,20 @@
+#!/bin/bash
+doc="FIND NON-ASCII CHARACTERS IN FILE\nJames B. Pease"
+usage="FindNonASCIICharacters FILE"
+while getopts ':h:' option; do
+
+    case "$option" in
+    h) echo -e  $doc'\n\nusage: '$usage
+       exit
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+    esac
+done
+grep --color='auto' -P -n "[\x80-\xFF]" $1

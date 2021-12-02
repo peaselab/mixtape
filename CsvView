@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+CSV FILE VIEWER
+James B. Pease
+"""
+
+import sys
+import argparse
+from pylib.mixcore import _LICENSE
+
+
+def generate_argparser():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=_LICENSE)
+    parser.add_argument('csvfile')
+    parser.add_argument('--delim', default=',')
+    parser.add_argument('--tsv',
+                        action="store_true",
+                        help="for tab-separated value")
+    parser.add_argument('--nlines', type=int)
+    parser.add_argument('--length', default=20,
+                        type=int, help="field length")
+    parser.add_argument('--no-header', action='store_true',
+                        help="skip the header")
+    return parser
+
+def main(arguments=None):
+    arguments = arguments if arguments is not None else sys.argv[1:]
+    parser = generate_argparser()
+    args = parser.parse_args(args=arguments)
+    nlines = args.nlines + 0 if args.nlines is not None else None
+    firstline = True
+    if args.delim == 'TAB' or args.tsv is True:
+        args.delim = '\t'
+    with open(args.infile, 'rt') as infile:
+        for line in infile:
+            arr = line.rstrip().split(args.delim)
+            print("|".join("{}{}".format(
+                x, " "*(args.length - len(x)))[:args.length] for x in arr))
+            if firstline is True:
+                firstline = False
+                print("-"*((args.length + 1)*len(arr)))
+            if nlines is not None:
+                nlines -= 1
+                if nlines == 0:
+                    break
+    return ''
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim:fileencoding=utf-8
+
+"""
+FASTA TRANSLATE
+James B. Pease
+"""
+
+import os
+import sys
+import argparse
+from pylib.mixcore import _LICENSE
+from pylib.mixcore import fasta_iter, translate
+
+
+def generate_argparser():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=_LICENSE)
+    parser.add_argument('fasta', type=os.path.abspath,
+                        help="input fasta file")
+    parser.add_argument('--out', type=os.path.abspath,
+                        default=sys.stdout, help="output fasta file")
+    parser.add_argument("--dealign", action="store_true",
+                        help="remove gaps prior to translation")
+    parser.add_argument("--mask-stop", action="store_true",
+                        help="mask-stop codon with an X")
+    parser.add_argument("--remove-stop", action="store_true",
+                        help="truncate stop codons")
+    return parser
+
+def main(arguments=None):
+    arguments = arguments if arguments is not None else sys.argv[1:]
+    parser = generate_argparser()
+    args = parser.parse_args(args=arguments)
+    for hdr, seq in fasta_iter(args.fasta):
+        if args.dealign:
+            seq = seq.replace("-", "")
+        print(">{}\n{}".format(hdr, translate(seq, remove_stop=args.remove_stop, 
+                                              mask_stop=args.mask_stop)), file=args.out)
+    return ''
+
+if __name__ == '__main__':
+    main()

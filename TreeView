@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim:fileencoding=utf-8
+
+"""
+TREE VIEW AS ASCII
+James B. Pease
+"""
+
+import sys
+from Bio import Phylo
+from io import StringIO
+from pylib.mixcore import _LICENSE
+
+def generate_argparser():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=_LICENSE)
+    parser.add_argument('tree', type=os.path.abspath,
+                        help="tree file (one per line, Newick format)")
+    parser.add_argument('--root-midpoint', type='store_true',
+                        help="Midpoint Root Tree before displaying")
+    parser.add_argument('--ladderize', type='store_true',
+                        help="Ladderize tree before displaying")
+    return parser
+
+def main(arguments=None):
+    arguments = arguments if arguments is not None else sys.argv[1:]
+    parser = generate_argparser()
+    args = parser.parse_args(args=arguments)
+    tree = Phylo.read(args.tree, 'newick')
+    if args.root_midpoint is True:
+        tree.root_at_midpoint()
+    if args.ladderize is True:
+        tree.ladderize()
+    Phylo.draw_ascii(tree)
+
+if __name__ == "__main__":
+    main()
