@@ -21,7 +21,7 @@ def generate_argparser():
                         help="tree file (one per line, Newick format)")
     parser.add_argument('outgroup', type=os.path.abspath,
                         help="outgroup name (exact match, case-sensitive)")
-    parser.add_argument('--out', type=os.path.abspath,
+    parser.add_argument('--out', type=argparse.FileType('w'),
                         default=sys.stdout, help="output fasta file")
     return parser
 

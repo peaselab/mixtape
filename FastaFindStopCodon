@@ -3,7 +3,8 @@
 # vim:fileencoding=utf-8
 
 """
-FASTA TRANSLATE
+FASTA FIND STOP CODONS IN SEQUENCES
+(note that gaps are removed prior to searching by default)
 James B. Pease
 """
 
@@ -22,24 +23,28 @@ def generate_argparser():
     parser.add_argument('fasta', type=os.path.abspath,
                         help="input fasta file")
     parser.add_argument('--out', type=argparse.FileType('w'),
-                        default=sys.stdout, help="output fasta file")
-    parser.add_argument("--dealign", action="store_true",
-                        help="remove gaps prior to translation")
-    parser.add_argument("--mask-stop", action="store_true",
-                        help="mask-stop codon with an X")
-    parser.add_argument("--remove-stop", action="store_true",
-                        help="truncate stop codons")
+                        default=sys.stdout, help="output CSV file path")
+    parser.add_argument("--keep-aligned", action="store_true",
+                        help="do not remove gaps prior to translation")
+    parser.add_argument("--ignore-last", action="store_true",
+                        help="do not report if the last codon is a stop")
     return parser
 
 def main(arguments=None):
     arguments = arguments if arguments is not None else sys.argv[1:]
     parser = generate_argparser()
     args = parser.parse_args(args=arguments)
+    stop_codons = ('TAA', 'TAG', 'TGA', 'UGA', 'UAA', 'UAG')
     for hdr, seq in fasta_iter(args.fasta):
-        if args.dealign:
+        if args.keep_aligned is False:
             seq = seq.replace("-", "")
-        print(">{}\n{}".format(hdr, translate(seq, remove_stop=args.remove_stop, 
-                                              mask_stop=args.mask_stop)), file=args.out)
+        maxrange = (len(seq) 
+                    if args.ignore_last is False 
+                    else len(seq) - 3)
+        for i in range(0, maxrange, 3):
+            if seq[i:i+3].upper() in stop_codons:
+                print('"{}",{}'.format(hdr, i), 
+                      file=args.out)
     return ''
 
 if __name__ == '__main__':
