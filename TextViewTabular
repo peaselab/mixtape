@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-CSV FILE VIEWER
+DELIMITED (CSV/TSV) FILE VIEWER
 James B. Pease
 """
 
@@ -16,8 +16,9 @@ def generate_argparser():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=_LICENSE)
-    parser.add_argument('csvfile')
-    parser.add_argument('--delim', default=',')
+    parser.add_argument('datafile')
+    parser.add_argument('--delim', default=','
+                        help='field delimited, use "TAB" for tabs')
     parser.add_argument('--tsv',
                         action="store_true",
                         help="for tab-separated value")
@@ -36,7 +37,7 @@ def main(arguments=None):
     firstline = True
     if args.delim == 'TAB' or args.tsv is True:
         args.delim = '\t'
-    with open(args.infile, 'rt') as infile:
+    with open(args.datafile, 'rt') as infile:
         for line in infile:
             arr = line.rstrip().split(args.delim)
             print("|".join("{}{}".format(

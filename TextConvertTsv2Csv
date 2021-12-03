@@ -1,0 +1,33 @@
+#!/bin/bash
+doc="CONVERT TAB-SEPARATED FILE TO COMMA-SEPARATED FILE\nJames B. Pease"
+usage="TextConvertTsv2Csv FILE"
+while getopts ':h:' option; do
+
+    case "$option" in
+    h) echo -e  $doc'\n\nusage: '$usage
+       exit
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+    esac
+done
+
+
+awk 'BEGIN { FS="\t"; OFS="," } {
+  rebuilt=0
+  for(i=1; i<=NF; ++i) {
+    if ($i ~ /,/ && $i !~ /^".*"$/) { 
+      gsub("\"", "\"\"", $i)
+      $i = "\"" $i "\""
+      rebuilt=1 
+    }
+  }
+  if (!rebuilt) { $1=$1 }
+  print
+}' $1
