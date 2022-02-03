@@ -1,0 +1,20 @@
+#!/bin/bash
+doc="REPORT THE LABELS OF TAXA IN A NEWICK TREE FILE \nJames B. Pease"
+	usage="mx-tree-listlabels FILE"
+while getopts ':h:' option; do
+
+    case "$option" in
+    h) echo -e  $doc'\n\nusage: '$usage
+       exit
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+    esac
+done
+grep -Po "[\(,\,].*?:" $1 | sed "s/[\(,\),\,,:]//g"

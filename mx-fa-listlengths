@@ -1,0 +1,20 @@
+#!/bin/bash
+doc="REPORT THE NAME AND LENGTH OF SEQUENCES IN A FASTA FILE \nJames B. Pease"
+	usage="mx-fa-listlengths FILE"
+while getopts ':h:' option; do
+
+    case "$option" in
+    h) echo -e  $doc'\n\nusage: '$usage
+       exit
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+    esac
+done
+awk '$0 ~ ">" {print n; n=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {n+=length($0);} END { print n; }' < $1
