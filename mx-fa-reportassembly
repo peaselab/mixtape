@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim:fileencoding=utf-8
+
+"""
+FASTA ASSEMBLY REPORT
+James B. Pease
+"""
+
+import os
+import sys
+import argparse
+from statistics import mean, median, quantiles
+from pylib.mixcore import _LICENSE
+from pylib.mixcore import fasta_iter, translate
+
+
+def generate_argparser():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=_LICENSE)
+    parser.add_argument('fasta', type=os.path.abspath,
+                        help="input fasta file")
+    parser.add_argument('--out', type=argparse.FileType('w'),
+                        default=sys.stdout, help="output CSV report fil")
+    return parser
+
+def main(arguments=None):
+    arguments = arguments if arguments is not None else sys.argv[1:]
+    parser = generate_argparser()
+    args = parser.parse_args(args=arguments)
+    lengths = []
+    nseq = 0
+    for hdr, seq in fasta_iter(args.fasta):
+        lengths.append(len(seq))
+        nseq += 1
+    total = sum(lengths)
+    run_total = 0
+    n50 = None
+    for x in sorted(lengths, reverse=True):
+        run_total += x
+        if run_total / total >= 0.5:
+            n50 = x + 0
+    report_items = []
+    report_items.append(('number of sequences', nseq))
+    report_items.append(('total length (bp)', total))
+    report_items.append(('total length (Mb)', total/1e6))
+    report_items.append(('longest sequence', max(lengths)))
+    report_items.append(('shortest sequence', min(lengths)))
+    report_items.append(('mean sequence length', mean(lengths)))
+    report_items.append(('median sequence length', median(lengths)))
+    report_items.append(('quintiles', quantiles(lengths, n=5)))
+    report_items.append(('N50 (center of mass)', n50))
+    report = "\n".join(["{} = {}".format(x, y) for (x, y) in report_items])
+    print(report, file=args.out)
+
+    return ''
+
+if __name__ == '__main__':
+    main()
