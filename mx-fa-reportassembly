@@ -10,9 +10,17 @@ James B. Pease
 import os
 import sys
 import argparse
-from statistics import mean, median, quantiles
+from statistics import mean, median
 from pylib.mixcore import _LICENSE
 from pylib.mixcore import fasta_iter, translate
+
+
+def quantiles(y, n=2):
+    y = list(sorted(y))
+    ret = [y[x] for x in range(0, len(y), round(len(y)/n))]
+    ret[0] = min(y)
+    ret[-1] = max(y)
+    return ret
 
 
 def generate_argparser():

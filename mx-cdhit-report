@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim:fileencoding=utf-8
+
+"""
+FASTA ASSEMBLY REPORT
+James B. Pease
+"""
+
+import os
+import sys
+import argparse
+from statistics import mean, median, mode
+from pylib.mixcore import _LICENSE
+from pylib.mixcore import fasta_iter, translate
+
+
+def quantiles(y, n=2):
+    y = list(sorted(y))
+    return [y[x] for x in range(0, len(y), round(len(y)/n))]
+
+def process_entry(entry):
+    entry = entry.rstrip().split("\t")
+    name = entry[1].split(" ")
+    length = int(name[0].replace("nt,",""))
+    longest = (name[2] == '*')
+    return (length, longest)
+
+def generate_argparser():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=_LICENSE)
+    parser.add_argument('cdhit', type=os.path.abspath,
+                        help="input cdhit cluster file")
+    parser.add_argument('--out', type=argparse.FileType('w'),
+                        default=sys.stdout, help="output CSV report file")
+    return parser
+
+def main(arguments=None):
+    arguments = arguments if arguments is not None else sys.argv[1:]
+    parser = generate_argparser()
+    args = parser.parse_args(args=arguments)
+    cluster_sizes = []
+    max_cluster_lengths = []
+    nseq = 0
+    current_cluster = None
+    with open(args.cdhit) as infile:
+        for line in infile:
+            if line.startswith(">"):
+                if current_cluster != None:
+                    cluster_sizes.append(len(current_cluster))
+                    for x in current_cluster:
+                        if x[1] is True:
+                            max_cluster_lengths.append(x[0])
+                current_cluster = []
+            else:
+                current_cluster.append(process_entry(line))
+    if current_cluster:
+        if current_cluster != None:
+            cluster_sizes.append(len(current_cluster))
+            for x in current_cluster:
+                if x[1] is True:
+                    max_cluster_lengths.append(x[0])
+    report_items = []
+    report_items.append(('number of clusters', len(cluster_sizes)))
+    report_items.append(('number of sequences', sum(cluster_sizes)))
+    report_items.append(('largest cluster', max(cluster_sizes)))
+    report_items.append(('mode cluster size', mode(cluster_sizes)))
+    report_items.append(('mean cluster size', mean(cluster_sizes)))
+    report_items.append(('quintile cluster size', quantiles(cluster_sizes, n=5)))
+    report_items.append(('number of singletons', cluster_sizes.count(1)))
+    report_items.append(('proportion of singletons', round(cluster_sizes.count(1)/len(cluster_sizes),2)))
+    report_items.append(('total of longest per cluster', sum(max_cluster_lengths)))
+    report_items.append(('total of longest per cluster (Mb)', sum(max_cluster_lengths)/1e6))
+    report_items.append(('longest longest sequence per cluster', max(max_cluster_lengths)))
+    report_items.append(('shortest longest sequence per cluster', min(max_cluster_lengths)))
+    report_items.append(('cluster sizes 1 to 20', [cluster_sizes.count(x) for x in range(1,21)]))
+    report = "\n".join(["{} = {}".format(x, y) for (x, y) in report_items])
+    print(report, file=args.out)
+
+    return ''
+
+if __name__ == '__main__':
+    main()
