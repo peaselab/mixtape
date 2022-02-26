@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim:fileencoding=utf-8
+
+"""
+FILTER FASTA FOR LABELS INCLUDING SEARCH TERM
+James B. Pease
+"""
+import os
+import sys
+import argparse
+from pylib.mixcore import _LICENSE
+from pylib.mixcore import fasta_text_iter
+
+
+def generate_argparser():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=_LICENSE)
+    parser.add_argument('fasta', type=os.path.abspath,
+                        help="input fasta file")
+    parser.add_argument('searchterm',
+                        help="keep fasta entries with this string in label")
+    parser.add_argument('--out', type=argparse.FileType('w'),
+                        default=sys.stdout, help="output CSV file path")
+    return parser
+
+def main(arguments=None):
+    arguments = arguments if arguments is not None else sys.argv[1:]
+    parser = generate_argparser()
+    args = parser.parse_args(args=arguments)
+    for hdr, seq in fasta_text_iter(args.fasta):
+        if args.searchterm in hdr:
+            print(">{}\n{}".format(hdr, seq), file=args.out)
+    return ''
+
+if __name__ == '__main__':
+    main()
