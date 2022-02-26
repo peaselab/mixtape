@@ -57,7 +57,6 @@ def main(arguments=None):
             for line in tsvfile:
                 entry = line.rstrip().split('\t')
                 newlabels[entry[args.colsearch - 1]] = entry[args.colreplace - 1]
-    print(newlabels['LC499661'])
     for hdr, seq in fasta_iter(args.fasta):
         newlabel = None
         if args.exact is True:
