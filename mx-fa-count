@@ -1,0 +1,21 @@
+#!/bin/bash
+doc="COUNT ENTRIES IN A FASTA FILE\nJames B. Pease"
+usage="mx-fa-count FILE"
+while getopts ':h:' option; do
+
+    case "$option" in
+    h) echo -e  $doc'\n\nusage: '$usage
+       exit
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+    esac
+done
+
+grep -c "^>" $1
