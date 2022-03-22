@@ -10,7 +10,7 @@ import os
 import sys
 import argparse
 from pylib.mixcore import _LICENSE
-from pylib.mixcore import fasta_text_iter
+from pylib.mixcore import fasta_iter
 
 
 def generate_argparser():
