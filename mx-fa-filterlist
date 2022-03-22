@@ -35,7 +35,7 @@ def main(arguments=None):
     with open(args.labelfile) as labelfile:
         for line in labelfile:
             labels.append(line.strip().lstrip(">"))
-    for hdr, seq in fasta_text_iter(args.fasta):
+    for hdr, seq in fasta_iter(args.fasta):
         if hdr in labels:
             print(">{}\n{}".format(hdr, seq), file=args.out)
     return ''
